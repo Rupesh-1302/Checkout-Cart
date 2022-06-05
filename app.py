@@ -13,7 +13,7 @@ def index():
 
 
 #  Making a POST request to register a new user
-@app.route('/register', methods=['POST'])
+@app.route('/api/register', methods=['POST'])
 def register():
     """ Register a new user """
     try:
@@ -80,7 +80,7 @@ def register():
 
 
 # Making a POST request to login a user
-@app.route('/login', methods=['POST'])
+@app.route('/api/login', methods=['POST'])
 def login():
     """ Login a user """
     try:
