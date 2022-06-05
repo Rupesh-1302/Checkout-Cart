@@ -1,7 +1,5 @@
 from chalice import Chalice, Response
-import sqlalchemy as db
-from DatabaseTasks.main import Product, Session, User, engine
-import requests
+from DatabaseTasks.main import Product, Cart, Session, User, engine
 from hashlib import sha256
 
 app = Chalice(app_name='checkout_cart')
@@ -142,6 +140,46 @@ def login():
             },
             status_code=400,
         )
+
+
+# route for handling Cart Addition and Deletion
+
+
+@app.route('/api/cart', methods=['POST', 'DELETE'], cors=True)
+def handle_cart():
+    request = app.current_request
+    data = request.json_body
+    user_id = data["userId"] if "userId" in data else None
+    product_id = data["productId"] if "productId" in data else None
+    quantity = 1
+    local_session = Session(bind=engine)
+    if 'quantity' in data:
+        quantity = data["quantity"]
+    if not user_id or not product_id:
+        return Response(status_code=403, body={"message": "Invalid Request"})
+
+    if request.method == 'POST':
+        # Handling adding to cart
+        try:
+            newCartItem = Cart(
+                userId=user_id, productId=product_id, quantity=quantity)
+            local_session.add(newCartItem)
+            local_session.commit()
+            return Response(status_code=200, body={"message": "Item added to cart successfully"})
+        except Exception as e:
+            print(e)
+            return Response(status_code=400, body={"message": "Something went Wrong"})
+    else:
+        # Handling Deletion from cart
+        try:
+            cartItem = local_session.query(Cart).filter(
+                Cart.userId == user_id).filter(Cart.productId == product_id).first()
+            local_session.delete(cartItem)
+            local_session.commit()
+            return Response(status_code=200, body={"message": "Item deleted from cart successfully"})
+        except Exception as e:
+            print(e)
+            return Response(status_code=400, body={"message": "Something went Wrong"})
 
 
 #  Driver code

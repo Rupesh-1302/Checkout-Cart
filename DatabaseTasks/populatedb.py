@@ -1,4 +1,3 @@
-from turtle import title
 from main import Product, Session, engine
 import requests
 
